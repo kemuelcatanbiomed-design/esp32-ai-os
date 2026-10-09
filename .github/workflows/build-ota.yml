@@ -1,0 +1,39 @@
+name: Build & Release ESP32 Firmware
+
+on:
+  push:
+    branches: [ main ]
+    tags:
+      - 'v*'
+
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install PlatformIO
+        run: pip install platformio
+
+      - name: Build Firmware Binary
+        run: pio run
+
+      - name: Create Release & Upload OTA Binary
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: latest
+          name: Automated AI-OS Release
+          draft: false
+          prerelease: false
+          files: .pio/build/esp32dev/firmware.bin
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
